@@ -3,7 +3,7 @@ import typer
 from pathlib import Path
 
 from informes_cli.comandos import cmd_examinar, cmd_examinar_agrupado, cmd_graficar
-from informes_cli.datos import leer_archivo, Datos, obtener_datos_importados
+from informes_cli.datos import Datos, obtener_datos_importados
 from informes_cli.modelo import Entidad, Agregador
 
 APP_NAME = "informes_cli"
