@@ -10,6 +10,9 @@ class Datos:
     productos: pd.DataFrame
     productos_de_venta: pd.DataFrame
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
 
 def leer_archivo(archivo: Path) -> pd.DataFrame:
     return pd.read_csv(archivo)
