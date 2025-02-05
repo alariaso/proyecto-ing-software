@@ -37,3 +37,22 @@ Producto:
 Cliente:
 - ID
 - nombre
+
+## Setup inicial
+
+```
+python -m venv venv
+venv\Scripts\activate.bat # para windows
+source venv/bin/activate # para linux/mac con bash/zsh
+pip install -r requirements.txt
+```
+
+## Uso
+
+```
+venv\Scripts\activate.bat # para windows
+source venv/bin/activate # para linux/mac con bash/zsh
+
+# para ejecutar el cli
+python -m informes_cli
+```
