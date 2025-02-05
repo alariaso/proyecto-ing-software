@@ -4,7 +4,7 @@ from pathlib import Path
 
 from informes_cli.comandos import cmd_examinar, cmd_examinar_agrupado, cmd_graficar
 from informes_cli.datos import Datos, obtener_datos_importados
-from informes_cli.modelo import Entidad, Agregador
+from informes_cli.modelo import Entidad, Agregador, TipoGrafico
 
 APP_NAME = "informes_cli"
 
@@ -33,9 +33,9 @@ def examinar_agrupado(
 
 
 @app.command()
-def graficar(entidad: Entidad, agrupar_por: Entidad):
+def graficar(tipo_grafico: TipoGrafico, entidad: Entidad, agrupar_por: Entidad):
     datos = verificar_obtener_datos_importados()
-    cmd_graficar(datos, entidad, agrupar_por)
+    cmd_graficar(datos, tipo_grafico, entidad, agrupar_por)
 
 
 def cmd_importar_datos(

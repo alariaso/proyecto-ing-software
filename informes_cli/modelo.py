@@ -10,3 +10,8 @@ class Entidad(str, Enum):
 class Agregador(str, Enum):
     suma = "suma"
     promedio = "promedio"
+
+
+class TipoGrafico(str, Enum):
+    barras = "barras"
+    circular = "circular" # torta / piechart / segmentos
