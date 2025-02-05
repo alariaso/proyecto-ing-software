@@ -8,7 +8,7 @@ from informes_cli.modelo import Entidad, Agregador
 
 APP_NAME = "informes_cli"
 
-app = typer.Typer(name=APP_NAME)
+app = typer.Typer(name=APP_NAME, no_args_is_help=True)
 
 
 @app.command()
