@@ -41,6 +41,14 @@ def graficar(tipo_grafico: TipoGrafico, entidad: Entidad, agrupar_por: Entidad):
 def cmd_importar_datos(
     ventas: Path, clientes: Path, productos: Path, productos_de_venta: Path
 ):
+    def verificar_existe(archivo: Path):
+        if not archivo.exists():
+            typer.echo(f"Error: no existe el archivo: {archivo}")
+            raise typer.Exit(1)
+    
+    for archivo in [ventas, clientes, productos, productos_de_venta]:
+        verificar_existe(archivo)
+
     datos_path = obtener_datos_path()
     d = {
         "ventas": str(ventas.resolve()),
