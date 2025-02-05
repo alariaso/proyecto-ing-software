@@ -43,11 +43,12 @@ def cmd_importar_datos(
 ):
     datos_path = obtener_datos_path()
     d = {
-        "ventas": ventas,
-        "clientes": clientes,
-        "productos": productos,
-        "productos_de_venta": productos_de_venta,
+        "ventas": str(ventas.resolve()),
+        "clientes": str(clientes.resolve()),
+        "productos": str(productos.resolve()),
+        "productos_de_venta": str(productos_de_venta.resolve()),
     }
+    datos_path.parent.mkdir(parents=True, exist_ok=True)
     with open(datos_path, "w") as datos_file:
         json.dump(d, datos_file)
     print("Datos importados!")
