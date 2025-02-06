@@ -1,0 +1,25 @@
+[project]
+name = "proyecto-ing-software"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "matplotlib>=3.10.0",
+    "pandas>=2.2.3",
+    "typer>=0.15.1",
+]
+
+[project.scripts]
+informes_cli = "informes_cli:main"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9.4",
+    "mypy>=1.15.0",
+    "pandas-stubs>=2.2.3.241126",
+]
+
+[tool.mypy]
+python_version = "3.10"
+packages = ["informes_cli"]
+strict = false

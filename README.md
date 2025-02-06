@@ -40,19 +40,10 @@ Cliente:
 
 ## Setup inicial
 
-```
-python -m venv venv
-venv\Scripts\activate.bat # para windows
-source venv/bin/activate # para linux/mac con bash/zsh
-pip install -r requirements.txt
-```
+[Instalar uv](https://docs.astral.sh/uv/getting-started/installation/)
 
 ## Uso
 
 ```
-venv\Scripts\activate.bat # para windows
-source venv/bin/activate # para linux/mac con bash/zsh
-
-# para ejecutar el cli
-python -m informes_cli
+uv run informes_cli
 ```
