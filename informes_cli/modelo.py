@@ -3,8 +3,8 @@ from enum import Enum
 
 class Entidad(str, Enum):
     ventas = "ventas"
-    producto = "producto"
-    cliente = "cliente"
+    productos = "productos"
+    clientes = "clientes"
 
 
 class Agregador(str, Enum):
