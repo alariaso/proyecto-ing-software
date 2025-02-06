@@ -10,7 +10,13 @@ class Datos:
     productos: pd.DataFrame
     productos_de_venta: pd.DataFrame
 
-    def __getitem__(self, item):
+    # def __post_init__(self):
+    #     self.ventas.set_index("ID", inplace=True)
+    #     self.clientes.set_index("ID", inplace=True)
+    #     self.productos.set_index("ID", inplace=True)
+    #     self.productos_de_venta.set_index("ID", inplace=True)
+
+    def __getitem__(self, item) -> pd.DataFrame:
         return getattr(self, item)
 
 
