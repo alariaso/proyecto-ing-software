@@ -10,8 +10,6 @@ def cmd_examinar(datos: Datos, entidad: Entidad, id: int | None):
         typer.echo(df)
     else:
         id_col = "ID"
-        if entidad == Entidad.ventas:
-            id_col = "ID de la venta"
 
         if id_col in df.columns:
             resultado = df[df[id_col] == id]
