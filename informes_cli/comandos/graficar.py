@@ -28,7 +28,9 @@ def cmd_graficar(
                 case TipoGrafico.circular:
                     f = pivot.plot.pie
             fig = f().get_figure()
-            fig.savefig("plot.png")
+            fig.savefig("grafico.png")
+
+            typer.echo("Grafico guardado en grafico.png")
         case _:
             typer.echo(f"Error: no soportado actualmente: {entidad.value} agrupando por {agrupar_por.value}")
             raise typer.Exit(1)
