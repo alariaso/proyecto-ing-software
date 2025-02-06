@@ -19,9 +19,9 @@ def importar_datos(
 
 
 @app.command()
-def examinar(entidad: Entidad):
+def examinar(entidad: Entidad, id: int | None = None):
     datos = verificar_obtener_datos_importados()
-    cmd_examinar(datos, entidad)
+    cmd_examinar(datos, entidad, id)
 
 
 @app.command()

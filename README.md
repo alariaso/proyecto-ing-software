@@ -4,7 +4,7 @@
 
 
 - comandos:
-	- un comando para ver cada tabla
+	- un comando para ver cada tabla, o una entrada especifica de una tabla
 	- un comando para ver datos agregados (total, promedio, etc)
 		- ventas (total del valor) agregado por cualquier columna
 	- generar graficas
