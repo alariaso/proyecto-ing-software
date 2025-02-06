@@ -14,4 +14,4 @@ class Agregador(str, Enum):
 
 class TipoGrafico(str, Enum):
     barras = "barras"
-    circular = "circular" # torta / piechart / segmentos
+    circular = "circular"  # torta / piechart / segmentos

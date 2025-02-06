@@ -12,10 +12,8 @@ app = typer.Typer(no_args_is_help=True)
 
 
 @app.command()
-def importar_datos(
-    ventas: Path, clientes: Path, productos: Path, productos_de_venta: Path
-):
-    cmd_importar_datos(ventas, clientes, productos, productos_de_venta)
+def importar_datos(carpeta: Path):
+    cmd_importar_datos(carpeta)
 
 
 @app.command()
@@ -38,28 +36,33 @@ def graficar(tipo_grafico: TipoGrafico, entidad: Entidad, agrupar_por: Entidad):
     cmd_graficar(datos, tipo_grafico, entidad, agrupar_por)
 
 
-def cmd_importar_datos(
-    ventas: Path, clientes: Path, productos: Path, productos_de_venta: Path
-):
-    def verificar_existe(archivo: Path):
-        if not archivo.exists():
-            typer.echo(f"Error: no existe el archivo: {archivo}")
+def cmd_importar_datos(carpeta: Path):
+    if not carpeta.is_dir():
+        typer.echo(f"No es una carpeta: {carpeta}")
+        raise typer.Exit(1)
+
+    archivos = ["ventas", "clientes", "productos", "productos_de_venta"]
+    d = {x: (carpeta / f"{x}.csv").resolve() for x in archivos}
+    d_str = {}
+
+    for archivo, ubicacion in d.items():
+        if not ubicacion.exists():
+            typer.echo(f"Error: no existe el archivo: {ubicacion}")
             raise typer.Exit(1)
-    
-    for archivo in [ventas, clientes, productos, productos_de_venta]:
-        verificar_existe(archivo)
+
+        if not ubicacion.is_file():
+            typer.echo(f"Error: no es un archivo: {ubicacion}")
+            raise typer.Exit(1)
+        d_str[archivo] = str(ubicacion)
 
     datos_path = obtener_datos_path()
-    d = {
-        "ventas": str(ventas.resolve()),
-        "clientes": str(clientes.resolve()),
-        "productos": str(productos.resolve()),
-        "productos_de_venta": str(productos_de_venta.resolve()),
-    }
     datos_path.parent.mkdir(parents=True, exist_ok=True)
     with open(datos_path, "w") as datos_file:
-        json.dump(d, datos_file)
-    print("Datos importados!")
+        json.dump(d_str, datos_file)
+
+    typer.echo("Datos importados!")
+    for archivo, ubicacion in d.items():
+        typer.echo(f"{archivo}: {ubicacion}")
 
 
 def verificar_obtener_datos_importados() -> Datos:
