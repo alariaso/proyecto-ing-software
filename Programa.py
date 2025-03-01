@@ -12,10 +12,11 @@
 
 import pandas as pd
 import plotly.express as px
-from dash import Dash, html, dcc, Input, Output
+from dash import Dash, html, dcc, Input, Output, no_update
 import base64
 import io
 import json
+import dash_bootstrap_components as dbc
 
 
 # =================================
@@ -31,7 +32,7 @@ import json
 # =============================================================
 
 # === CREA LA APP ===
-app = Dash(__name__)
+app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
 app.title = "Reportes"#Cambiar el titulo de la pagina
 
 
@@ -60,7 +61,9 @@ app.layout = html.Div(
                 style={"textAlign": "center", "marginTop": "0px", "marginBottom": "30px"}),
         
         #Ãlmacena datos procesados queluego se usaran en graficos
-        dcc.Store(id="stored-data", data={}),
+        dcc.Store(id="stored-data-ventas-producto", data={}),
+
+        dcc.Store(id="stored-data-original", data={}),
         
         #Dropdown para seleccionar el año
         html.Div(
@@ -146,10 +149,19 @@ app.layout = html.Div(
         ], style={"display": "flex", "justifyContent": "center", "marginBottom": "30px"}),
 
         #Linea final para separar secciones
-        html.Hr(style={"border": "1px solid #444", "marginTop": "30px"})
+        html.Hr(style={"border": "1px solid #444", "marginTop": "30px"}),
         
+        dbc.Row([
+            dbc.Col(dbc.Card([
+                html.H3("Cantidad de ventas por cliente"),
+                dcc.Graph(id="cantidad-ventas-por-cliente", figure={})
+            ], body=True)),
+            dbc.Col(dbc.Card([
+                html.H3("Clientes por producto"),
+                dcc.Graph(id="clientes-por-productos", figure={})
+            ], body=True))
+        ])
         ]
-    
 )
 
 # ==================================================
@@ -160,16 +172,17 @@ app.layout = html.Div(
 #Función callback que actualiza los gráficos de barras y pastel e información adicional
 #cuando se selecciona un año
 @app.callback(
-    Output("stored-data", "data"),  # Guarda df_final en dcc.Store
+    Output("stored-data-ventas-producto", "data"),  # Guarda df_final en dcc.Store
     Output("year-selector", "options"),
     Output("year-selector", "value"),
+    Output("stored-data-original", "data"),
     Input("upload-data", "contents"),
     Input("upload-data", "filename"),
     prevent_initial_call=True
 )
 def update_data(contents_list, filenames_list):#Si no se incluyen datos no hace  nada y no cambia la pagina
     if contents_list is None or filenames_list is None:
-        return Dash.no_update
+        return no_update
 
      # Verificar que contents_list y filenames_list sean listas
     if not isinstance(contents_list, list):
@@ -190,13 +203,15 @@ def update_data(contents_list, filenames_list):#Si no se incluyen datos no hace 
         dfs[filename] = df
 
     # Verificar que tengamos los 3 archivos
-    if not all(name in dfs for name in ["productos_de_venta.csv", "ventas.csv", "productos.csv"]):
-        return Dash.no_update  # No actualizar si falta alguno
+    if not all(name in dfs for name in ["productos_de_venta.csv", "ventas.csv", "productos.csv", "clientes.csv"]):
+        return no_update  # No actualizar si falta alguno
 
     # Extraer los DataFrames correctamente
     df_pventa = dfs["productos_de_venta.csv"]
     df_ventas = dfs["ventas.csv"]
     df_productos = dfs["productos.csv"]
+    df_clientes = dfs["clientes.csv"]
+
 
     # Unir los datos 
     df_pventa["ventas_totales"] = df_pventa["valor"] * df_pventa["cantidad"]
@@ -210,7 +225,13 @@ def update_data(contents_list, filenames_list):#Si no se incluyen datos no hace 
     new_year_options = [{"label": str(year), "value": str(year)} for year in new_years]
 
      # Convertir df_final a formato json para almacenarlo en dcc.Store
-    return df_final.to_json(date_format="iso", orient="split"), new_year_options, str(new_years[0])
+    df_final_json = df_final.to_json(date_format="iso", orient="split")
+
+    dfs["ventas.csv"]["fecha"] = pd.to_datetime(dfs["ventas.csv"]["fecha"])
+    dfs["ventas.csv"]["year"] = dfs["ventas.csv"]["fecha"].dt.year
+    dfs_original = dict(map(lambda item: (item[0], item[1].to_dict("records")), dfs.items()))
+
+    return df_final_json, new_year_options, str(new_years[0]), dfs_original
 
 @app.callback(
     Output("bar-chart", "figure"),
@@ -219,13 +240,13 @@ def update_data(contents_list, filenames_list):#Si no se incluyen datos no hace 
     Output("num-sales", "children"),
     Output("bar-info", "children"),
     Output("pie-info", "children"),
-    Input("stored-data", "data"),  # Obtiene los datos procesados
+    Input("stored-data-ventas-producto", "data"),  # Obtiene los datos procesados
     Input("year-selector", "value")
 )
 
 def update_charts(stored_data,selected_year):
     if not stored_data:
-        return Dash.no_update  # Si no hay datos, no hacer nada
+        return no_update  # Si no hay datos, no hacer nada
     
     #Filtra los datos para el año seleccionado
     df_final = pd.read_json(stored_data, orient="split")
@@ -326,6 +347,74 @@ def update_charts(stored_data,selected_year):
     )
     
     return bar_fig, pie_fig, total_sales_text, num_sales_text, bar_info, pie_info
+
+@app.callback(
+    Output("cantidad-ventas-por-cliente", "figure"),
+    Input("stored-data-original", "data"),
+    Input("year-selector", "value")
+)
+def update_qty_by_client_chart(dfs_originales, selected_year):
+    if not "clientes.csv" in dfs_originales or not "ventas.csv" in dfs_originales:
+        return no_update
+
+    df_clientes = pd.DataFrame(dfs_originales["clientes.csv"])
+    df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
+    df_ventas = df_ventas[df_ventas["year"] == int(selected_year)]
+    df_ventas_con_clientes = df_ventas.\
+        merge(df_clientes, how='right', left_on='Cliente', right_on='ID', suffixes=("_ventas", "_clientes"))[["nombre", "ID_ventas"]].\
+        rename(columns={"nombre": "Cliente"})
+
+    fig = px.histogram(df_ventas_con_clientes, x="Cliente")
+    fig.update_layout(
+        yaxis_title_text="Cantidad de ventas",
+        template="plotly_dark",
+        paper_bgcolor=COLOR_FONDO,
+        plot_bgcolor="#333333",
+        font_color=COLOR_TEXTO,
+        title_font_size=20
+    )
+    return fig
+
+
+@app.callback(
+    Output("clientes-por-productos", "figure"),
+    Input("stored-data-original", "data"),
+    Input("year-selector", "value")
+)
+def update_client_by_product_chart(dfs_originales, selected_year):
+    for f in ["clientes", "ventas", "productos", "productos_de_venta"]:
+        if f"{f}.csv" not in dfs_originales:
+            return no_update
+
+    df_clientes = pd.DataFrame(dfs_originales["clientes.csv"])
+    df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
+    df_ventas = df_ventas[df_ventas["year"] == int(selected_year)]
+    df_productos = pd.DataFrame(dfs_originales["productos.csv"])
+    df_productos_de_venta = pd.DataFrame(dfs_originales["productos_de_venta.csv"])
+
+    df_ventas_con_clientes = df_ventas.\
+            merge(df_clientes, how='right', left_on='Cliente', right_on='ID', suffixes=("_venta", "_cliente"))[["ID_venta", "ID_cliente", "nombre"]].rename(columns={"nombre": "NOMBRE_cliente"})
+
+    df_ventas_clientes_productos_de_venta = df_ventas_con_clientes.\
+        merge(df_productos_de_venta, how="left", left_on="ID_venta", right_on="ID venta")[["ID_venta", "ID_cliente", "NOMBRE_cliente", "ID", "ID producto", "cantidad"]].rename(columns={"ID": "ID_producto_de_venta", "cantidad": "CANTIDAD_productos_de_venta"})
+
+    df_ventas_clientes_productos = df_ventas_clientes_productos_de_venta.\
+        merge(df_productos, how="left", left_on="ID producto", right_on="ID")[["ID_venta", "NOMBRE_cliente", "nombre", "CANTIDAD_productos_de_venta"]].rename(columns={"nombre": "NOMBRE_producto"})
+
+    df = df_ventas_clientes_productos.groupby(by=["NOMBRE_producto", "NOMBRE_cliente"]).sum()["CANTIDAD_productos_de_venta"].\
+        reset_index()
+
+    fig = px.bar(df, x="NOMBRE_producto", color="NOMBRE_cliente", y="CANTIDAD_productos_de_venta")
+    fig.update_layout(
+        yaxis_title_text="Cantidad de productos por cliente",
+        xaxis_title_text="Producto",
+        template="plotly_dark",
+        paper_bgcolor=COLOR_FONDO,
+        plot_bgcolor="#333333",
+        font_color=COLOR_TEXTO,
+        title_font_size=20
+    )
+    return fig
 
 # =============================
 # 5. EJECUCION DE LA APLICACION
