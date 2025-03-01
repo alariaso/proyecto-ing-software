@@ -13,33 +13,17 @@
 import pandas as pd
 import plotly.express as px
 from dash import Dash, html, dcc, Input, Output
+import base64
+import io
+import json
+
 
 # =================================
 # 1. CARGA Y PROCESAMIENTO DE DATOS
 # =================================
 
 #Se leen los 3 archivos csv proporcionados
-df_pventa = pd.read_csv("productos_de_venta.csv") 
-df_ventas = pd.read_csv("ventas.csv")
-df_productos = pd.read_csv("productos.csv")
 
-
-#Se calculan las ventas totales por cada registro (valor * cantidad) esto se usara mas adelante
-df_pventa["ventas_totales"] = df_pventa["valor"] * df_pventa["cantidad"]
-
-#Une la tabla de productos de ventas con la tabla de ventas para incorporar la fecha (es como un join xd)
-df_merged = pd.merge(df_pventa, df_ventas, left_on="ID venta", right_on="ID", how="left", suffixes=("", "_venta"))
-
-#Convierte la columna 'fecha' a datetime y extraer el año para usarse mas tarde
-df_merged["fecha"] = pd.to_datetime(df_merged["fecha"])
-df_merged["year"] = df_merged["fecha"].dt.year
-
-#Une la tabla productos para obtener el nombre de cada producto de la tabla de ventas que se usara mas adelante en los graficos (es como un joun xd)
-df_final = pd.merge(df_merged, df_productos, left_on="ID producto", right_on="ID", how="left", suffixes=("", "_prod"))
-
-#Obtiene los años disponibles para el dropdown es decir el selector de mas adelante
-years = sorted(df_merged["year"].unique())
-year_options = [{"label": str(year), "value": str(year)} for year in years]
 
 
 # =============================================================
@@ -48,13 +32,19 @@ year_options = [{"label": str(year), "value": str(year)} for year in years]
 
 # === CREA LA APP ===
 app = Dash(__name__)
+app.title = "Reportes"#Cambiar el titulo de la pagina
+
 
 # === COLORES DE LA PAGINA ===
+
 COLOR_FONDO = "#222222"   # Fondo oscuro
 COLOR_TEXTO = "#FFFFFF"   # Texto blanco
 
+
+
 #lit toda la pagina ._. aqui se definen los colores de la pagina, además la distrubicion de los graficos e informacion extra de los graficos (Frontend)
 app.layout = html.Div(
+
     style={
         "backgroundColor": COLOR_FONDO,
         "color": COLOR_TEXTO,
@@ -68,13 +58,16 @@ app.layout = html.Div(
                 style={"textAlign": "center", "marginBottom": "5px"}),
         html.H1("REPORTE DE VENTAS",
                 style={"textAlign": "center", "marginTop": "0px", "marginBottom": "30px"}),
-
+        
+        #Ãlmacena datos procesados queluego se usaran en graficos
+        dcc.Store(id="stored-data", data={}),
+        
         #Dropdown para seleccionar el año
         html.Div(
             dcc.Dropdown(
                 id="year-selector",
-                options=year_options,
-                value=str(years[0]),
+                options=[],#Valor none y false ya que se definen luego 
+                value=False,#No se estan definiendo :(
                 clearable=False,
                 style={"width": "50%", "margin": "0 auto", "color": "#000000"}
             ),
@@ -107,7 +100,17 @@ app.layout = html.Div(
                     "border": "1px solid #444",
                     "padding": "20px",
                     "borderRadius": "8px"
+                
                 }),
+                #SUbir datos
+                dcc.Upload(
+                id="upload-data",
+                children=html.Button("Subir Archivo CSV", style={"fontSize": "16px", "padding": "10px"}),
+                style={"textAlign": "center", "marginBottom": "20px"},
+                multiple = True
+                ),
+                
+        
             ]
         ),
 
@@ -144,7 +147,9 @@ app.layout = html.Div(
 
         #Linea final para separar secciones
         html.Hr(style={"border": "1px solid #444", "marginTop": "30px"})
-    ]
+        
+        ]
+    
 )
 
 # ==================================================
@@ -155,17 +160,76 @@ app.layout = html.Div(
 #Función callback que actualiza los gráficos de barras y pastel e información adicional
 #cuando se selecciona un año
 @app.callback(
+    Output("stored-data", "data"),  # Guarda df_final en dcc.Store
+    Output("year-selector", "options"),
+    Output("year-selector", "value"),
+    Input("upload-data", "contents"),
+    Input("upload-data", "filename"),
+    prevent_initial_call=True
+)
+def update_data(contents_list, filenames_list):#Si no se incluyen datos no hace  nada y no cambia la pagina
+    if contents_list is None or filenames_list is None:
+        return Dash.no_update
+
+     # Verificar que contents_list y filenames_list sean listas
+    if not isinstance(contents_list, list):
+        contents_list = [contents_list]
+    if not isinstance(filenames_list, list):
+        filenames_list = [filenames_list]
+    
+    # Diccionario para guardar los DataFrames por nombre
+    dfs = {}
+
+    # Se procesan los archivos
+    for contents, filename in zip(contents_list, filenames_list):
+        content_type, content_string = contents.split(',')
+        decoded = base64.b64decode(content_string)
+        df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
+
+        # Guardar el DataFrame con su nombre de archivo
+        dfs[filename] = df
+
+    # Verificar que tengamos los 3 archivos
+    if not all(name in dfs for name in ["productos_de_venta.csv", "ventas.csv", "productos.csv"]):
+        return Dash.no_update  # No actualizar si falta alguno
+
+    # Extraer los DataFrames correctamente
+    df_pventa = dfs["productos_de_venta.csv"]
+    df_ventas = dfs["ventas.csv"]
+    df_productos = dfs["productos.csv"]
+
+    # Unir los datos 
+    df_pventa["ventas_totales"] = df_pventa["valor"] * df_pventa["cantidad"]
+    df_merged = pd.merge(df_pventa, df_ventas, left_on="ID venta", right_on="ID", how="left")
+    df_merged["fecha"] = pd.to_datetime(df_merged["fecha"])
+    df_merged["year"] = df_merged["fecha"].dt.year
+    df_final = pd.merge(df_merged, df_productos, left_on="ID producto", right_on="ID", how="left")
+
+    # Obtener los años disponibles
+    new_years = sorted(df_final["year"].unique())
+    new_year_options = [{"label": str(year), "value": str(year)} for year in new_years]
+
+     # Convertir df_final a formato json para almacenarlo en dcc.Store
+    return df_final.to_json(date_format="iso", orient="split"), new_year_options, str(new_years[0])
+
+@app.callback(
     Output("bar-chart", "figure"),
     Output("pie-chart", "figure"),
     Output("total-sales", "children"),
     Output("num-sales", "children"),
     Output("bar-info", "children"),
     Output("pie-info", "children"),
+    Input("stored-data", "data"),  # Obtiene los datos procesados
     Input("year-selector", "value")
 )
-def update_charts(selected_year):
 
+def update_charts(stored_data,selected_year):
+    if not stored_data:
+        return Dash.no_update  # Si no hay datos, no hacer nada
+    
     #Filtra los datos para el año seleccionado
+    df_final = pd.read_json(stored_data, orient="split")
+    
     dff = df_final[df_final["year"] == int(selected_year)]
 
     #Agrupa por el nombre del producto y suma las ventas totales
@@ -187,6 +251,8 @@ def update_charts(selected_year):
     else:
         max_row = {"nombre": "N/A", "ventas_totales": 0}
         min_row = {"nombre": "N/A", "ventas_totales": 0}
+    
+    
     
     #Se muestra el producto mas vendido y menos vendido
     bar_info = html.Div([
