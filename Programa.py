@@ -66,8 +66,8 @@ app.layout = html.Div(
         html.Div(
             dcc.Dropdown(
                 id="year-selector",
-                options=[],#Valor none y false ya que se definen luego 
-                value=False,#No se estan definiendo :(
+                options=[],#lista vacia y false que se definen luego de subir los archivos 
+                value=False,
                 clearable=False,
                 style={"width": "50%", "margin": "0 auto", "color": "#000000"}
             ),
