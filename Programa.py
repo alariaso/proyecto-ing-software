@@ -402,9 +402,9 @@ def update_client_by_product_chart(dfs_originales, selected_year):
         merge(df_productos, how="left", left_on="ID producto", right_on="ID")[["ID_venta", "NOMBRE_cliente", "nombre", "CANTIDAD_productos_de_venta"]].rename(columns={"nombre": "NOMBRE_producto"})
 
     df = df_ventas_clientes_productos.groupby(by=["NOMBRE_producto", "NOMBRE_cliente"]).sum()["CANTIDAD_productos_de_venta"].\
-        reset_index()
+        reset_index().rename(columns={"NOMBRE_cliente": "Cliente"})
 
-    fig = px.bar(df, x="NOMBRE_producto", color="NOMBRE_cliente", y="CANTIDAD_productos_de_venta")
+    fig = px.bar(df, x="NOMBRE_producto", color="Cliente", y="CANTIDAD_productos_de_venta")
     fig.update_layout(
         yaxis_title_text="Cantidad de productos por cliente",
         xaxis_title_text="Producto",
