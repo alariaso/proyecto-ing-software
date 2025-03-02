@@ -71,7 +71,7 @@ app.layout = html.Div(
         ),
         # Ãlmacena datos procesados queluego se usaran en graficos
         dcc.Store(id="stored-data-ventas-producto", data={}),
-        dcc.Store(id="stored-data-original", data={}),
+        dcc.Store(id="stored-data-original"),
         # SUbir datos
         dcc.Upload(
             id="upload-data",
@@ -651,9 +651,8 @@ def update_charts(stored_data, selected_year):
     Input("tabla-productos-mas-vendidos-cantidad", "value"),
 )
 def update_most_sold_products_table(dfs_originales, selected_year, size):
-    for f in ["ventas", "productos", "productos_de_venta"]:
-        if f"{f}.csv" not in dfs_originales:
-            return no_update
+    if not dfs_originales:
+        return no_update
 
     return gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas=True)
 
@@ -665,9 +664,8 @@ def update_most_sold_products_table(dfs_originales, selected_year, size):
     Input("tabla-productos-menos-vendidos-cantidad", "value"),
 )
 def update_least_sold_products_table(dfs_originales, selected_year, size):
-    for f in ["ventas", "productos", "productos_de_venta"]:
-        if f"{f}.csv" not in dfs_originales:
-            return no_update
+    if not dfs_originales:
+        return no_update
 
     return gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas=False)
 
@@ -678,7 +676,7 @@ def update_least_sold_products_table(dfs_originales, selected_year, size):
     Input("year-selector", "value"),
 )
 def update_qty_by_client_chart(dfs_originales, selected_year):
-    if "clientes.csv" not in dfs_originales or "ventas.csv" not in dfs_originales:
+    if not dfs_originales:
         return no_update
 
     df_clientes = pd.DataFrame(dfs_originales["clientes.csv"])
@@ -710,9 +708,8 @@ def update_qty_by_client_chart(dfs_originales, selected_year):
     Input("year-selector", "value"),
 )
 def update_client_by_product_chart(dfs_originales, selected_year):
-    for f in ["clientes", "ventas", "productos", "productos_de_venta"]:
-        if f"{f}.csv" not in dfs_originales:
-            return no_update
+    if not dfs_originales:
+        return no_update
 
     df_clientes = pd.DataFrame(dfs_originales["clientes.csv"])
     df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
@@ -774,10 +771,7 @@ def update_client_by_product_chart(dfs_originales, selected_year):
     Input("year-selector", "value"),
 )
 def update_stats_products_by_sale(dfs_originales, selected_year):
-    if (
-        "ventas.csv" not in dfs_originales
-        or "productos_de_venta.csv" not in dfs_originales
-    ):
+    if not dfs_originales:
         return no_update
 
     df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
@@ -803,10 +797,7 @@ def update_stats_products_by_sale(dfs_originales, selected_year):
     Input("year-selector", "value"),
 )
 def update_stats_income_by_sale(dfs_originales, selected_year):
-    if (
-        "ventas.csv" not in dfs_originales
-        or "productos_de_venta.csv" not in dfs_originales
-    ):
+    if not dfs_originales:
         return no_update
 
     df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
@@ -832,9 +823,8 @@ def update_stats_income_by_sale(dfs_originales, selected_year):
     Input("year-selector", "value"),
 )
 def update_stats_clients_income(dfs_originales, selected_year):
-    for f in ["ventas", "clientes", "productos_de_venta"]:
-        if f"{f}.csv" not in dfs_originales:
-            return no_update
+    if not dfs_originales:
+        return no_update
 
     df_clientes = pd.DataFrame(dfs_originales["clientes.csv"])
     df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
@@ -869,10 +859,7 @@ def update_stats_clients_income(dfs_originales, selected_year):
     Input("year-selector", "value"),
 )
 def update_stats_clients_product_qty(dfs_originales, selected_year):
-    if (
-        "ventas.csv" not in dfs_originales
-        or "productos_de_venta.csv" not in dfs_originales
-    ):
+    if not dfs_originales:
         return no_update
 
     df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
