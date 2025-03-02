@@ -11,7 +11,6 @@
 # ===========================
 
 import pandas as pd
-import numpy as np
 import plotly.express as px
 from dash import (
     Dash,
@@ -19,6 +18,7 @@ from dash import (
     dcc,
     Input,
     Output,
+    State,
     no_update,
     dash_table,
     clientside_callback,
@@ -72,6 +72,18 @@ app.layout = html.Div(
         # Ãlmacena datos procesados queluego se usaran en graficos
         dcc.Store(id="stored-data-ventas-producto", data={}),
         dcc.Store(id="stored-data-original"),
+        dcc.Store(id="stored-for-excel-export-ventas", data={}),
+        dcc.Store(id="stored-for-excel-export-productos_mas_vendidos", data={}),
+        dcc.Store(id="stored-for-excel-export-productos_menos_vendidos", data={}),
+        dcc.Store(id="stored-for-excel-export-ventas_por_cliente", data={}),
+        dcc.Store(id="stored-for-excel-export-clientes_por_productos", data={}),
+        dcc.Store(id="stored-for-excel-export-estadisticas_ventas_productos", data={}),
+        dcc.Store(id="stored-for-excel-export-estadisticas_ventas_ingreso", data={}),
+        dcc.Store(id="stored-for-excel-export-estadisticas_clientes_ingreso", data={}),
+        dcc.Store(
+            id="stored-for-excel-export-estadisticas_clientes_productos", data={}
+        ),
+        dcc.Download(id="download-excel"),
         # SUbir datos
         dcc.Upload(
             id="upload-data",
@@ -93,7 +105,10 @@ app.layout = html.Div(
                         #     "marginBottom": "20px",
                         # },
                         dbc.Button(
-                            "Exportar a excel", color="secondary", class_name="m-2"
+                            "Exportar a excel",
+                            id="exportar-excel-button",
+                            color="secondary",
+                            class_name="m-2",
                         ),
                     ],
                     style={
@@ -525,6 +540,7 @@ def update_data(
     Output("num-sales", "children"),
     Output("bar-info", "children"),
     Output("pie-info", "children"),
+    Output("stored-for-excel-export-ventas", "data"),
     Input("stored-data-ventas-producto", "data"),  # Obtiene los datos procesados
     Input("year-selector", "value"),
 )
@@ -641,11 +657,20 @@ def update_charts(stored_data, selected_year):
         title_font_size=20,
     )
 
-    return bar_fig, pie_fig, total_sales_text, num_sales_text, bar_info, pie_info
+    return (
+        bar_fig,
+        pie_fig,
+        total_sales_text,
+        num_sales_text,
+        bar_info,
+        pie_info,
+        df_grouped.to_dict(),
+    )
 
 
 @app.callback(
     Output("tabla-productos-mas-vendidos", "data"),
+    Output("stored-for-excel-export-productos_mas_vendidos", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
     Input("tabla-productos-mas-vendidos-cantidad", "value"),
@@ -654,11 +679,13 @@ def update_most_sold_products_table(dfs_originales, selected_year, size):
     if not dfs_originales:
         return no_update
 
-    return gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas=True)
+    d = gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas=True)
+    return d, d
 
 
 @app.callback(
     Output("tabla-productos-menos-vendidos", "data"),
+    Output("stored-for-excel-export-productos_menos_vendidos", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
     Input("tabla-productos-menos-vendidos-cantidad", "value"),
@@ -667,11 +694,13 @@ def update_least_sold_products_table(dfs_originales, selected_year, size):
     if not dfs_originales:
         return no_update
 
-    return gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas=False)
+    d = gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas=False)
+    return d, d
 
 
 @app.callback(
     Output("cantidad-ventas-por-cliente", "figure"),
+    Output("stored-for-excel-export-ventas_por_cliente", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
 )
@@ -699,11 +728,13 @@ def update_qty_by_client_chart(dfs_originales, selected_year):
         font_color=COLOR_TEXTO,
         title_font_size=20,
     )
-    return fig
+
+    return fig, df_ventas_con_clientes.to_dict()
 
 
 @app.callback(
     Output("clientes-por-productos", "figure"),
+    Output("stored-for-excel-export-clientes_por_productos", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
 )
@@ -761,12 +792,14 @@ def update_client_by_product_chart(dfs_originales, selected_year):
         font_color=COLOR_TEXTO,
         title_font_size=20,
     )
-    return fig
+
+    return fig, df.to_dict()
 
 
 @app.callback(
     Output("estadisticas-ventas-promedio-productos-por-venta", "children"),
     Output("estadisticas-ventas-desviacion-productos-por-venta", "children"),
+    Output("stored-for-excel-export-estadisticas_ventas_productos", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
 )
@@ -787,12 +820,13 @@ def update_stats_products_by_sale(dfs_originales, selected_year):
     mean = df.mean()
     std = df.std()
 
-    return f"{mean:,.2f}", f"{std:,.2f}"
+    return f"{mean:,.2f}", f"{std:,.2f}", df.to_dict()
 
 
 @app.callback(
     Output("estadisticas-ventas-promedio-ingreso-por-venta", "children"),
     Output("estadisticas-ventas-desviacion-ingreso-por-venta", "children"),
+    Output("stored-for-excel-export-estadisticas_ventas_ingreso", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
 )
@@ -813,12 +847,13 @@ def update_stats_income_by_sale(dfs_originales, selected_year):
     mean = df.mean()
     std = df.std()
 
-    return f"${mean:,.2f}", f"{std:,.2f}"
+    return f"${mean:,.2f}", f"{std:,.2f}", df.to_dict()
 
 
 @app.callback(
     Output("estadisticas-clientes-promedio-ingresos-por-cliente", "children"),
     Output("estadisticas-clientes-desviacion-ingresos-por-cliente", "children"),
+    Output("stored-for-excel-export-estadisticas_clientes_ingreso", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
 )
@@ -849,12 +884,13 @@ def update_stats_clients_income(dfs_originales, selected_year):
     mean = df.mean()
     std = df.std()
 
-    return f"${mean:,.2f}", f"{std:,.2f}"
+    return f"${mean:,.2f}", f"{std:,.2f}", df.to_dict()
 
 
 @app.callback(
     Output("estadisticas-clientes-promedio-cantidad-productos", "children"),
     Output("estadisticas-clientes-desviacion-cantidad-productos", "children"),
+    Output("stored-for-excel-export-estadisticas_clientes_productos", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
 )
@@ -880,7 +916,52 @@ def update_stats_clients_product_qty(dfs_originales, selected_year):
     mean = df.mean()
     std = df.std()
 
-    return f"{mean:,.2f}", f"{std:,.2f}"
+    return f"{mean:,.2f}", f"{std:,.2f}", df.to_dict()
+
+
+@app.callback(
+    Output("download-excel", "data"),
+    inputs=dict(n_clicks=Input("exportar-excel-button", "n_clicks")),
+    state=dict(
+        ventas=State("stored-for-excel-export-ventas", "data"),
+        productos_mas_vendidos=State(
+            "stored-for-excel-export-productos_mas_vendidos", "data"
+        ),
+        productos_menos_vendidos=State(
+            "stored-for-excel-export-productos_menos_vendidos", "data"
+        ),
+        ventas_por_cliente=State("stored-for-excel-export-ventas_por_cliente", "data"),
+        clientes_por_productos=State(
+            "stored-for-excel-export-clientes_por_productos", "data"
+        ),
+        estadisticas_ventas_productos=State(
+            "stored-for-excel-export-estadisticas_ventas_productos", "data"
+        ),
+        estadisticas_ventas_ingreso=State(
+            "stored-for-excel-export-estadisticas_ventas_ingreso", "data"
+        ),
+        estadisticas_clientes_ingreso=State(
+            "stored-for-excel-export-estadisticas_clientes_ingreso", "data"
+        ),
+        estadisticas_clientes_productos=State(
+            "stored-for-excel-export-estadisticas_clientes_productos", "data"
+        ),
+    ),
+    prevent_initial_call=True,
+)
+def save_to_excel_button(n_clicks, **kwargs):
+    if not n_clicks or not n_clicks > 0:
+        return no_update
+
+    with pd.ExcelWriter(path="data.xlsx") as writer:
+        for k, v in kwargs.items():
+            if isinstance(v, dict) and should_be_series(v):
+                df = pd.Series(v)
+            else:
+                df = pd.DataFrame(v)
+            df.to_excel(writer, sheet_name=k)
+
+    return dcc.send_file("./data.xlsx")
 
 
 def gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas: bool):
@@ -920,6 +1001,13 @@ def gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas: bool)
         )
         .to_dict("records")
     )
+
+
+def should_be_series(s: dict):
+    for v in s.values():
+        if isinstance(v, dict) or isinstance(v, list):
+            return False
+    return True
 
 
 clientside_callback(
