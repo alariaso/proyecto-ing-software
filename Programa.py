@@ -82,11 +82,25 @@ app.layout = html.Div(
         html.Div(
             [
                 html.Div(
-                    dbc.Button("Guardar pdf", id="savePDF-button", color="secondary"),
+                    [
+                        dbc.Button(
+                            "Guardar pdf",
+                            id="savePDF-button",
+                            color="secondary",
+                            class_name="m-2",
+                        ),
+                        # style={
+                        #     "marginBottom": "20px",
+                        # },
+                        dbc.Button(
+                            "Exportar a excel", color="secondary", class_name="m-2"
+                        ),
+                    ],
                     style={
-                        "display": "flex",
+                        "maxWidth": "fit-content",
+                        "marginLeft": "auto",
+                        "marginRight": "auto",
                         "marginBottom": "20px",
-                        "justifyContent": "center",
                     },
                 ),
                 # Dropdown para seleccionar el año
