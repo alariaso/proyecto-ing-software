@@ -621,7 +621,14 @@ def update_qty_by_client_chart(dfs_originales, selected_year):
         suffixes=("_ventas", "_clientes"),
     )[["nombre", "ID_ventas"]].rename(columns={"nombre": "Cliente"})
 
+    print("DF:")
+    print(df_ventas_con_clientes)
+
     fig = px.histogram(df_ventas_con_clientes, x="Cliente")
+
+    print("FIG:")
+    print(fig)
+
     fig.update_layout(
         yaxis_title_text="Cantidad de ventas",
         template="plotly_dark",
@@ -702,7 +709,7 @@ def update_client_by_product_chart(dfs_originales, selected_year):
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
 )
-def update_mean_products_by_sale(dfs_originales, selected_year):
+def update_stats_products_by_sale(dfs_originales, selected_year):
     if (
         "ventas.csv" not in dfs_originales
         or "productos_de_venta.csv" not in dfs_originales
@@ -719,7 +726,39 @@ def update_mean_products_by_sale(dfs_originales, selected_year):
         .count()["ID producto"]
     )
 
-    return tuple(map(lambda x: str(np.round(x, 2)), (df.mean(), df.std())))
+    mean = df.mean()
+    std = df.std()
+
+    return f"{mean:,.2f}", f"{std:,.2f}"
+
+
+@app.callback(
+    Output("estadisticas-ventas-promedio-ingreso-por-venta", "children"),
+    Output("estadisticas-ventas-desviacion-ingreso-por-venta", "children"),
+    Input("stored-data-original", "data"),
+    Input("year-selector", "value"),
+)
+def update_stats_income_by_sale(dfs_originales, selected_year):
+    if (
+        "ventas.csv" not in dfs_originales
+        or "productos_de_venta.csv" not in dfs_originales
+    ):
+        return no_update
+
+    df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
+    df_ventas = df_ventas[df_ventas["year"] == int(selected_year)]
+    df_productos_de_venta = pd.DataFrame(dfs_originales["productos_de_venta.csv"])
+
+    df = (
+        df_ventas.merge(df_productos_de_venta, left_on="ID", right_on="ID venta")
+        .groupby("ID venta")
+        .sum()["valor"]
+    )
+
+    mean = df.mean()
+    std = df.std()
+
+    return f"${mean:,.2f}", f"{std:,.2f}"
 
 
 def gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas: bool):
