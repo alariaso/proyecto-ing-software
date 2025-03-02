@@ -12,7 +12,16 @@
 
 import pandas as pd
 import plotly.express as px
-from dash import Dash, html, dcc, Input, Output, no_update, dash_table, clientside_callback
+from dash import (
+    Dash,
+    html,
+    dcc,
+    Input,
+    Output,
+    no_update,
+    dash_table,
+    clientside_callback,
+)
 import base64
 import io
 import dash_bootstrap_components as dbc
@@ -73,7 +82,11 @@ app.layout = html.Div(
             [
                 html.Div(
                     dbc.Button("Guardar pdf", id="savePDF-button", color="secondary"),
-                    style={"display": "flex", "marginBottom": "20px", "justifyContent": "center"}
+                    style={
+                        "display": "flex",
+                        "marginBottom": "20px",
+                        "justifyContent": "center",
+                    },
                 ),
                 # Dropdown para seleccionar el año
                 html.Div(
@@ -648,7 +661,7 @@ clientside_callback(
         savePDF();
     }
     """,
-    Input("savePDF-button", "n_clicks")
+    Input("savePDF-button", "n_clicks"),
 )
 
 # =============================
