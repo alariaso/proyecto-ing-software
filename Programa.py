@@ -12,7 +12,7 @@
 
 import pandas as pd
 import plotly.express as px
-from dash import Dash, html, dcc, Input, Output, no_update, dash_table
+from dash import Dash, html, dcc, Input, Output, no_update, dash_table, clientside_callback
 import base64
 import io
 import dash_bootstrap_components as dbc
@@ -71,6 +71,10 @@ app.layout = html.Div(
         ),
         html.Div(
             [
+                html.Div(
+                    dbc.Button("Guardar pdf", id="savePDF-button", color="secondary"),
+                    style={"display": "flex", "marginBottom": "20px", "justifyContent": "center"}
+                ),
                 # Dropdown para seleccionar el año
                 html.Div(
                     dcc.Dropdown(
@@ -176,7 +180,7 @@ app.layout = html.Div(
                     [
                         html.H3(
                             "Los",
-                            style={"display": "inline-block", "margin-right": "5px"},
+                            style={"display": "inline-block", "marginRight": "5px"},
                         ),
                         dcc.Dropdown(
                             [5, 10, 15],
@@ -186,7 +190,7 @@ app.layout = html.Div(
                         ),
                         html.H3(
                             "productos más vendidos",
-                            style={"display": "inline-block", "margin-left": "5px"},
+                            style={"display": "inline-block", "marginLeft": "5px"},
                         ),
                         dash_table.DataTable(
                             id="tabla-productos-mas-vendidos",
@@ -202,7 +206,7 @@ app.layout = html.Div(
                     [
                         html.H3(
                             "Los",
-                            style={"display": "inline-block", "margin-right": "5px"},
+                            style={"display": "inline-block", "marginRight": "5px"},
                         ),
                         dcc.Dropdown(
                             [5, 10, 15],
@@ -212,7 +216,7 @@ app.layout = html.Div(
                         ),
                         html.H3(
                             "productos menos vendidos",
-                            style={"display": "inline-block", "margin-left": "5px"},
+                            style={"display": "inline-block", "marginLeft": "5px"},
                         ),
                         dash_table.DataTable(
                             id="tabla-productos-menos-vendidos",
@@ -636,6 +640,16 @@ def gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas: bool)
         .to_dict("records")
     )
 
+
+clientside_callback(
+    """
+    function(nClicks) {
+        if (!(nClicks > 0)) return;
+        savePDF();
+    }
+    """,
+    Input("savePDF-button", "n_clicks")
+)
 
 # =============================
 # 5. EJECUCION DE LA APLICACION
