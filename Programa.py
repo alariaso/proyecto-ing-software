@@ -12,7 +12,7 @@
 
 import pandas as pd
 import plotly.express as px
-from dash import Dash, html, dcc, Input, Output, no_update
+from dash import Dash, html, dcc, Input, Output, no_update, dash_table
 import base64
 import io
 import json
@@ -150,7 +150,27 @@ app.layout = html.Div(
 
         #Linea final para separar secciones
         html.Hr(style={"border": "1px solid #444", "marginTop": "30px"}),
-        
+
+        html.Div([
+            html.H3("Los", style={"display": "inline-block", "margin-right": "5px"}),
+            dcc.Dropdown([5, 10, 15],
+                         value=5,
+                         id="tabla-productos-mas-vendidos-cantidad", style={"display": "inline-block", "color": "#000000"}),
+            html.H3("productos más vendidos", style={"display":"inline-block", "margin-left": "5px"}),
+            dash_table.DataTable(id="tabla-productos-mas-vendidos", style_cell={"color": COLOR_TEXTO, "background-color": COLOR_FONDO}, style_header={"font-weight": "bold"})
+        ]),
+
+        html.Div([
+            html.H3("Los", style={"display": "inline-block", "margin-right": "5px"}),
+            dcc.Dropdown([5, 10, 15],
+                         value=5,
+                         id="tabla-productos-menos-vendidos-cantidad", style={"display": "inline-block", "color": "#000000"}),
+            html.H3("productos menos vendidos", style={"display":"inline-block", "margin-left": "5px"}),
+            dash_table.DataTable(id="tabla-productos-menos-vendidos", style_cell={"color": COLOR_TEXTO, "background-color": COLOR_FONDO}, style_header={"font-weight": "bold"})
+        ]),
+
+        html.Hr(style={"border": "1px solid #444", "marginTop": "30px"}),
+
         dbc.Row([
             dbc.Col(dbc.Card([
                 html.H3("Cantidad de ventas por cliente"),
@@ -348,6 +368,35 @@ def update_charts(stored_data,selected_year):
     
     return bar_fig, pie_fig, total_sales_text, num_sales_text, bar_info, pie_info
 
+
+@app.callback(
+    Output("tabla-productos-mas-vendidos", "data"),
+    Input("stored-data-original", "data"),
+    Input("year-selector", "value"),
+    Input("tabla-productos-mas-vendidos-cantidad", "value")
+)
+def update_most_sold_products_table(dfs_originales, selected_year, size):
+    for f in ["ventas", "productos", "productos_de_venta"]:
+        if f"{f}.csv" not in dfs_originales:
+            return no_update
+
+    return gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas=True)
+
+
+@app.callback(
+    Output("tabla-productos-menos-vendidos", "data"),
+    Input("stored-data-original", "data"),
+    Input("year-selector", "value"),
+    Input("tabla-productos-menos-vendidos-cantidad", "value")
+)
+def update_least_sold_products_table(dfs_originales, selected_year, size):
+    for f in ["ventas", "productos", "productos_de_venta"]:
+        if f"{f}.csv" not in dfs_originales:
+            return no_update
+
+    return gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas=False)
+
+
 @app.callback(
     Output("cantidad-ventas-por-cliente", "figure"),
     Input("stored-data-original", "data"),
@@ -415,6 +464,15 @@ def update_client_by_product_chart(dfs_originales, selected_year):
         title_font_size=20
     )
     return fig
+
+
+def gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas: bool):
+    df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
+    df_ventas = df_ventas[df_ventas["year"] == int(selected_year)]
+    df_productos = pd.DataFrame(dfs_originales["productos.csv"])
+    df_productos_de_venta = pd.DataFrame(dfs_originales["productos_de_venta.csv"])
+
+    return df_ventas.merge(df_productos_de_venta, left_on="ID", right_on="ID venta", suffixes=("_venta", "_producto_de_venta"))[["ID_venta", "ID producto", "cantidad", "valor"]].rename(columns={"cantidad": "CANTIDAD_producto_en_venta", "valor": "VALOR_producto_en_venta"}).merge(df_productos, left_on="ID producto", right_on="ID")[["CANTIDAD_producto_en_venta", "VALOR_producto_en_venta", "nombre"]].rename(columns={"nombre": "NOMBRE_producto"}).groupby("NOMBRE_producto").sum().sort_values(by="CANTIDAD_producto_en_venta", ascending=not mas).head(size).reset_index().rename(columns={"NOMBRE_producto": "Producto", "CANTIDAD_producto_en_venta": "Unidades vendidas", "VALOR_producto_en_venta": "Valor total"}).to_dict("records")
 
 # =============================
 # 5. EJECUCION DE LA APLICACION
