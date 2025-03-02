@@ -11,6 +11,7 @@
 # ===========================
 
 import pandas as pd
+import numpy as np
 import plotly.express as px
 from dash import (
     Dash,
@@ -279,6 +280,71 @@ app.layout = html.Div(
                                 body=True,
                             )
                         ),
+                    ]
+                ),
+                html.Hr(
+                    style={
+                        "border": "1px solid #444",
+                        "marginTop": "30px",
+                        "breakAfter": "page",
+                    }
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            dbc.Card(
+                                [
+                                    html.H3("Estadísticas de ventas"),
+                                    html.H4("Productos por venta"),
+                                    html.H5(
+                                        "Promedio:",
+                                        style={
+                                            "display": "inline-block",
+                                            "marginRight": "5px",
+                                        },
+                                    ),
+                                    html.Span(
+                                        id="estadisticas-ventas-promedio-productos-por-venta"
+                                    ),
+                                    html.Br(),
+                                    html.H5(
+                                        "Desviación estándar:",
+                                        style={
+                                            "display": "inline-block",
+                                            "marginRight": "5px",
+                                        },
+                                    ),
+                                    html.Span(
+                                        id="estadisticas-ventas-desviacion-productos-por-venta"
+                                    ),
+                                    html.Br(),
+                                    html.H4("Ingreso por venta"),
+                                    html.H5(
+                                        "Promedio:",
+                                        style={
+                                            "display": "inline-block",
+                                            "marginRight": "5px",
+                                        },
+                                    ),
+                                    html.Span(
+                                        id="estadisticas-ventas-promedio-ingreso-por-venta"
+                                    ),
+                                    html.Br(),
+                                    html.H5(
+                                        "Desviación estándar:",
+                                        style={
+                                            "display": "inline-block",
+                                            "marginRight": "5px",
+                                        },
+                                    ),
+                                    html.Span(
+                                        id="estadisticas-ventas-desviacion-ingreso-por-venta"
+                                    ),
+                                    html.Br(),
+                                ],
+                                body=True,
+                            )
+                        )
                     ]
                 ),
             ],
@@ -628,6 +694,32 @@ def update_client_by_product_chart(dfs_originales, selected_year):
         title_font_size=20,
     )
     return fig
+
+
+@app.callback(
+    Output("estadisticas-ventas-promedio-productos-por-venta", "children"),
+    Output("estadisticas-ventas-desviacion-productos-por-venta", "children"),
+    Input("stored-data-original", "data"),
+    Input("year-selector", "value"),
+)
+def update_mean_products_by_sale(dfs_originales, selected_year):
+    if (
+        "ventas.csv" not in dfs_originales
+        or "productos_de_venta.csv" not in dfs_originales
+    ):
+        return no_update
+
+    df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
+    df_ventas = df_ventas[df_ventas["year"] == int(selected_year)]
+    df_productos_de_venta = pd.DataFrame(dfs_originales["productos_de_venta.csv"])
+
+    df = (
+        df_ventas.merge(df_productos_de_venta, left_on="ID", right_on="ID venta")
+        .groupby("ID venta")
+        .count()["ID producto"]
+    )
+
+    return tuple(map(lambda x: str(np.round(x, 2)), (df.mean(), df.std())))
 
 
 def gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas: bool):
