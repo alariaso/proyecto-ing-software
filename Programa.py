@@ -62,178 +62,196 @@ app.layout = html.Div(
         # Ãlmacena datos procesados queluego se usaran en graficos
         dcc.Store(id="stored-data-ventas-producto", data={}),
         dcc.Store(id="stored-data-original", data={}),
-        # Dropdown para seleccionar el año
-        html.Div(
-            dcc.Dropdown(
-                id="year-selector",
-                options=[],  # lista vacia y false que se definen luego de subir los archivos
-                value=False,
-                clearable=False,
-                style={"width": "50%", "margin": "0 auto", "color": "#000000"},
-            ),
-            style={"textAlign": "center", "marginBottom": "30px"},
+        # SUbir datos
+        dcc.Upload(
+            id="upload-data",
+            children=dbc.Button("Subir Archivo CSV"),
+            style={"textAlign": "center", "marginBottom": "20px"},
+            multiple=True,
         ),
-        # Subtitulos generales que muestran ventas totales y cantidad de ventas en el año seleccionado
         html.Div(
-            style={
-                "display": "flex",
-                "justifyContent": "center",
-                "marginBottom": "30px",
-                "gap": "40px",
-            },
-            children=[
-                # ventas totales
+            [
+                # Dropdown para seleccionar el año
                 html.Div(
-                    [
-                        html.H3("Ventas Totales:", style={"marginBottom": "10px"}),
-                        html.Div(id="total-sales", style={"fontSize": "24px"}),
-                    ],
-                    style={
-                        "border": "1px solid #444",
-                        "padding": "20px",
-                        "borderRadius": "8px",
-                    },
-                ),
-                # cantidad de ventas
-                html.Div(
-                    [
-                        html.H3("Cantidad de ventas:", style={"marginBottom": "10px"}),
-                        html.Div(id="num-sales", style={"fontSize": "24px"}),
-                    ],
-                    style={
-                        "border": "1px solid #444",
-                        "padding": "20px",
-                        "borderRadius": "8px",
-                    },
-                ),
-                # SUbir datos
-                dcc.Upload(
-                    id="upload-data",
-                    children=html.Button(
-                        "Subir Archivo CSV",
-                        style={"fontSize": "16px", "padding": "10px"},
+                    dcc.Dropdown(
+                        id="year-selector",
+                        options=[],  # lista vacia y false que se definen luego de subir los archivos
+                        value=False,
+                        clearable=False,
+                        style={"width": "50%", "margin": "0 auto", "color": "#000000"},
                     ),
-                    style={"textAlign": "center", "marginBottom": "20px"},
-                    multiple=True,
+                    style={"textAlign": "center", "marginBottom": "30px"},
                 ),
-            ],
-        ),
-        # Linea separadora horizontal
-        html.Hr(style={"border": "1px solid #444", "marginBottom": "30px"}),
-        # Contenedor de graficos y sus respectivas secciones informativas
-        html.Div(
-            [
-                # Caja para el grafico de barras con información adicional sobre los productos
+                # Subtitulos generales que muestran ventas totales y cantidad de ventas en el año seleccionado
+                html.Div(
+                    style={
+                        "display": "flex",
+                        "justifyContent": "center",
+                        "marginBottom": "30px",
+                        "gap": "40px",
+                    },
+                    children=[
+                        # ventas totales
+                        html.Div(
+                            [
+                                html.H3(
+                                    "Ventas Totales:", style={"marginBottom": "10px"}
+                                ),
+                                html.Div(id="total-sales", style={"fontSize": "24px"}),
+                            ],
+                            style={
+                                "border": "1px solid #444",
+                                "padding": "20px",
+                                "borderRadius": "8px",
+                            },
+                        ),
+                        # cantidad de ventas
+                        html.Div(
+                            [
+                                html.H3(
+                                    "Cantidad de ventas:",
+                                    style={"marginBottom": "10px"},
+                                ),
+                                html.Div(id="num-sales", style={"fontSize": "24px"}),
+                            ],
+                            style={
+                                "border": "1px solid #444",
+                                "padding": "20px",
+                                "borderRadius": "8px",
+                            },
+                        ),
+                    ],
+                ),
+                # Linea separadora horizontal
+                html.Hr(style={"border": "1px solid #444", "marginBottom": "30px"}),
+                # Contenedor de graficos y sus respectivas secciones informativas
                 html.Div(
                     [
-                        # Informacion del producto más vendido y menos vendido del grafico de barras
+                        # Caja para el grafico de barras con información adicional sobre los productos
                         html.Div(
-                            id="bar-info",
-                            style={"marginBottom": "20px", "fontSize": "18px"},
+                            [
+                                # Informacion del producto más vendido y menos vendido del grafico de barras
+                                html.Div(
+                                    id="bar-info",
+                                    style={"marginBottom": "20px", "fontSize": "18px"},
+                                ),
+                                dcc.Graph(id="bar-chart", style={"height": "600px"}),
+                            ],
+                            style={
+                                "width": "48%",
+                                "border": "1px solid #444",
+                                "borderRadius": "8px",
+                                "padding": "10px",
+                                "marginRight": "1%",
+                            },
                         ),
-                        dcc.Graph(id="bar-chart", style={"height": "600px"}),
+                        # Caja para el grafico de pastel con informacion adicional sobre los productos
+                        html.Div(
+                            [
+                                # Informacion del producto mas vendido y menos vendido del grafico de pastel
+                                html.Div(
+                                    id="pie-info",
+                                    style={"marginBottom": "20px", "fontSize": "18px"},
+                                ),
+                                dcc.Graph(id="pie-chart", style={"height": "600px"}),
+                            ],
+                            style={
+                                "width": "48%",
+                                "border": "1px solid #444",
+                                "borderRadius": "8px",
+                                "padding": "10px",
+                                "marginLeft": "1%",
+                            },
+                        ),
                     ],
                     style={
-                        "width": "48%",
-                        "border": "1px solid #444",
-                        "borderRadius": "8px",
-                        "padding": "10px",
-                        "marginRight": "1%",
+                        "display": "flex",
+                        "justifyContent": "center",
+                        "marginBottom": "30px",
                     },
                 ),
-                # Caja para el grafico de pastel con informacion adicional sobre los productos
+                # Linea final para separar secciones
+                html.Hr(style={"border": "1px solid #444", "marginTop": "30px"}),
                 html.Div(
                     [
-                        # Informacion del producto mas vendido y menos vendido del grafico de pastel
-                        html.Div(
-                            id="pie-info",
-                            style={"marginBottom": "20px", "fontSize": "18px"},
+                        html.H3(
+                            "Los",
+                            style={"display": "inline-block", "margin-right": "5px"},
                         ),
-                        dcc.Graph(id="pie-chart", style={"height": "600px"}),
-                    ],
-                    style={
-                        "width": "48%",
-                        "border": "1px solid #444",
-                        "borderRadius": "8px",
-                        "padding": "10px",
-                        "marginLeft": "1%",
-                    },
+                        dcc.Dropdown(
+                            [5, 10, 15],
+                            value=5,
+                            id="tabla-productos-mas-vendidos-cantidad",
+                            style={"display": "inline-block", "color": "#000000"},
+                        ),
+                        html.H3(
+                            "productos más vendidos",
+                            style={"display": "inline-block", "margin-left": "5px"},
+                        ),
+                        dash_table.DataTable(
+                            id="tabla-productos-mas-vendidos",
+                            style_cell={
+                                "color": COLOR_TEXTO,
+                                "background-color": COLOR_FONDO,
+                            },
+                            style_header={"font-weight": "bold"},
+                        ),
+                    ]
+                ),
+                html.Div(
+                    [
+                        html.H3(
+                            "Los",
+                            style={"display": "inline-block", "margin-right": "5px"},
+                        ),
+                        dcc.Dropdown(
+                            [5, 10, 15],
+                            value=5,
+                            id="tabla-productos-menos-vendidos-cantidad",
+                            style={"display": "inline-block", "color": "#000000"},
+                        ),
+                        html.H3(
+                            "productos menos vendidos",
+                            style={"display": "inline-block", "margin-left": "5px"},
+                        ),
+                        dash_table.DataTable(
+                            id="tabla-productos-menos-vendidos",
+                            style_cell={
+                                "color": COLOR_TEXTO,
+                                "background-color": COLOR_FONDO,
+                            },
+                            style_header={"font-weight": "bold"},
+                        ),
+                    ]
+                ),
+                html.Hr(style={"border": "1px solid #444", "marginTop": "30px"}),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            dbc.Card(
+                                [
+                                    html.H3("Cantidad de ventas por cliente"),
+                                    dcc.Graph(
+                                        id="cantidad-ventas-por-cliente", figure={}
+                                    ),
+                                ],
+                                body=True,
+                            )
+                        ),
+                        dbc.Col(
+                            dbc.Card(
+                                [
+                                    html.H3("Clientes por producto"),
+                                    dcc.Graph(id="clientes-por-productos", figure={}),
+                                ],
+                                body=True,
+                            )
+                        ),
+                    ]
                 ),
             ],
-            style={
-                "display": "flex",
-                "justifyContent": "center",
-                "marginBottom": "30px",
-            },
-        ),
-        # Linea final para separar secciones
-        html.Hr(style={"border": "1px solid #444", "marginTop": "30px"}),
-        html.Div(
-            [
-                html.H3(
-                    "Los", style={"display": "inline-block", "margin-right": "5px"}
-                ),
-                dcc.Dropdown(
-                    [5, 10, 15],
-                    value=5,
-                    id="tabla-productos-mas-vendidos-cantidad",
-                    style={"display": "inline-block", "color": "#000000"},
-                ),
-                html.H3(
-                    "productos más vendidos",
-                    style={"display": "inline-block", "margin-left": "5px"},
-                ),
-                dash_table.DataTable(
-                    id="tabla-productos-mas-vendidos",
-                    style_cell={"color": COLOR_TEXTO, "background-color": COLOR_FONDO},
-                    style_header={"font-weight": "bold"},
-                ),
-            ]
-        ),
-        html.Div(
-            [
-                html.H3(
-                    "Los", style={"display": "inline-block", "margin-right": "5px"}
-                ),
-                dcc.Dropdown(
-                    [5, 10, 15],
-                    value=5,
-                    id="tabla-productos-menos-vendidos-cantidad",
-                    style={"display": "inline-block", "color": "#000000"},
-                ),
-                html.H3(
-                    "productos menos vendidos",
-                    style={"display": "inline-block", "margin-left": "5px"},
-                ),
-                dash_table.DataTable(
-                    id="tabla-productos-menos-vendidos",
-                    style_cell={"color": COLOR_TEXTO, "background-color": COLOR_FONDO},
-                    style_header={"font-weight": "bold"},
-                ),
-            ]
-        ),
-        html.Hr(style={"border": "1px solid #444", "marginTop": "30px"}),
-        dbc.Row(
-            [
-                dbc.Col(
-                    dbc.Card(
-                        [
-                            html.H3("Cantidad de ventas por cliente"),
-                            dcc.Graph(id="cantidad-ventas-por-cliente", figure={}),
-                        ],
-                        body=True,
-                    )
-                ),
-                dbc.Col(
-                    dbc.Card(
-                        [
-                            html.H3("Clientes por producto"),
-                            dcc.Graph(id="clientes-por-productos", figure={}),
-                        ],
-                        body=True,
-                    )
-                ),
-            ]
+            id="app-container",
+            style={"display": "none"},
         ),
     ],
 )
@@ -251,6 +269,7 @@ app.layout = html.Div(
     Output("year-selector", "options"),
     Output("year-selector", "value"),
     Output("stored-data-original", "data"),
+    Output("app-container", "style"),
     Input("upload-data", "contents"),
     Input("upload-data", "filename"),
     prevent_initial_call=True,
@@ -321,7 +340,13 @@ def update_data(
         map(lambda item: (item[0], item[1].to_dict("records")), dfs.items())
     )
 
-    return df_final_json, new_year_options, str(new_years[0]), dfs_original
+    return (
+        df_final_json,
+        new_year_options,
+        str(new_years[0]),
+        dfs_original,
+        {"display": "block"},
+    )
 
 
 @app.callback(
