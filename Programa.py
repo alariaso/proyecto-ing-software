@@ -140,12 +140,18 @@ app.layout = html.Div(
                     ],
                 ),
                 # Linea separadora horizontal
-                html.Hr(style={"border": "1px solid #444", "marginBottom": "30px"}),
+                html.Hr(
+                    style={
+                        "border": "1px solid #444",
+                        "marginBottom": "30px",
+                        "breakAfter": "page",
+                    }
+                ),
                 # Contenedor de graficos y sus respectivas secciones informativas
-                html.Div(
+                dbc.Row(
                     [
                         # Caja para el grafico de barras con información adicional sobre los productos
-                        html.Div(
+                        dbc.Col(
                             [
                                 # Informacion del producto más vendido y menos vendido del grafico de barras
                                 html.Div(
@@ -155,15 +161,14 @@ app.layout = html.Div(
                                 dcc.Graph(id="bar-chart", style={"height": "600px"}),
                             ],
                             style={
-                                "width": "48%",
                                 "border": "1px solid #444",
                                 "borderRadius": "8px",
                                 "padding": "10px",
-                                "marginRight": "1%",
+                                "breakAfter": "page",
                             },
                         ),
                         # Caja para el grafico de pastel con informacion adicional sobre los productos
-                        html.Div(
+                        dbc.Col(
                             [
                                 # Informacion del producto mas vendido y menos vendido del grafico de pastel
                                 html.Div(
@@ -173,22 +178,25 @@ app.layout = html.Div(
                                 dcc.Graph(id="pie-chart", style={"height": "600px"}),
                             ],
                             style={
-                                "width": "48%",
                                 "border": "1px solid #444",
                                 "borderRadius": "8px",
                                 "padding": "10px",
-                                "marginLeft": "1%",
+                                "marginLeft": "30px",
                             },
                         ),
                     ],
                     style={
-                        "display": "flex",
-                        "justifyContent": "center",
                         "marginBottom": "30px",
                     },
                 ),
                 # Linea final para separar secciones
-                html.Hr(style={"border": "1px solid #444", "marginTop": "30px"}),
+                html.Hr(
+                    style={
+                        "border": "1px solid #444",
+                        "marginTop": "30px",
+                        "breakAfter": "page",
+                    }
+                ),
                 html.Div(
                     [
                         html.H3(
@@ -241,7 +249,13 @@ app.layout = html.Div(
                         ),
                     ]
                 ),
-                html.Hr(style={"border": "1px solid #444", "marginTop": "30px"}),
+                html.Hr(
+                    style={
+                        "border": "1px solid #444",
+                        "marginTop": "30px",
+                        "breakAfter": "page",
+                    }
+                ),
                 dbc.Row(
                     [
                         dbc.Col(
@@ -253,7 +267,8 @@ app.layout = html.Div(
                                     ),
                                 ],
                                 body=True,
-                            )
+                            ),
+                            style={"breakAfter": "page"},
                         ),
                         dbc.Col(
                             dbc.Card(

@@ -1,6 +1,12 @@
-document.documentElement.setAttribute('data-bs-theme', 'dark')
+document.documentElement.setAttribute("data-bs-theme", "dark")
 
 function savePDF() {
     const body = document.getElementsByTagName("body")[0]
-    html2pdf(body, {filename: 'informe.pdf'})
+    const opts = {
+        filename: "informe.pdf",
+        jsPDF: {
+            orientation: "landscape",
+        }
+    }
+    html2pdf(body, opts)
 }
