@@ -166,6 +166,7 @@ app.layout = html.Div(
                                 "borderRadius": "8px",
                                 "padding": "10px",
                                 "breakAfter": "page",
+                                "margin": "15px",
                             },
                         ),
                         # Caja para el grafico de pastel con informacion adicional sobre los productos
@@ -182,7 +183,7 @@ app.layout = html.Div(
                                 "border": "1px solid #444",
                                 "borderRadius": "8px",
                                 "padding": "10px",
-                                "marginLeft": "30px",
+                                "margin": "15px",
                             },
                         ),
                     ],
@@ -318,7 +319,7 @@ app.layout = html.Div(
                                         id="estadisticas-ventas-desviacion-productos-por-venta"
                                     ),
                                     html.Br(),
-                                    html.H4("Ingreso por venta"),
+                                    html.H4("Ingresos por venta"),
                                     html.H5(
                                         "Promedio:",
                                         style={
@@ -344,7 +345,63 @@ app.layout = html.Div(
                                 ],
                                 body=True,
                             )
-                        )
+                        ),
+                        dbc.Col(
+                            dbc.Card(
+                                [
+                                    html.H3("Estadísticas de clientes"),
+                                    html.H4("Ingresos por cliente"),
+                                    html.H5(
+                                        "Promedio:",
+                                        style={
+                                            "display": "inline-block",
+                                            "marginRight": "5px",
+                                        },
+                                    ),
+                                    html.Span(
+                                        id="estadisticas-clientes-promedio-ingresos-por-cliente"
+                                    ),
+                                    html.Br(),
+                                    html.H5(
+                                        "Desviación estándar:",
+                                        style={
+                                            "display": "inline-block",
+                                            "marginRight": "5px",
+                                        },
+                                    ),
+                                    html.Span(
+                                        id="estadisticas-clientes-desviacion-ingresos-por-cliente"
+                                    ),
+                                    html.Br(),
+                                    html.H4(
+                                        "Cantidad de productos diferentes que compra cada cliente"
+                                    ),
+                                    html.H5(
+                                        "Promedio:",
+                                        style={
+                                            "display": "inline-block",
+                                            "marginRight": "5px",
+                                        },
+                                    ),
+                                    html.Span(
+                                        id="estadisticas-clientes-promedio-cantidad-productos"
+                                    ),
+                                    html.Br(),
+                                    html.H5(
+                                        "Desviación estándar:",
+                                        style={
+                                            "display": "inline-block",
+                                            "marginRight": "5px",
+                                        },
+                                    ),
+                                    html.Span(
+                                        id="estadisticas-clientes-desviacion-cantidad-productos"
+                                    ),
+                                    html.Br(),
+                                ],
+                                body=True,
+                            )
+                        ),
                     ]
                 ),
             ],
@@ -621,14 +678,7 @@ def update_qty_by_client_chart(dfs_originales, selected_year):
         suffixes=("_ventas", "_clientes"),
     )[["nombre", "ID_ventas"]].rename(columns={"nombre": "Cliente"})
 
-    print("DF:")
-    print(df_ventas_con_clientes)
-
     fig = px.histogram(df_ventas_con_clientes, x="Cliente")
-
-    print("FIG:")
-    print(fig)
-
     fig.update_layout(
         yaxis_title_text="Cantidad de ventas",
         template="plotly_dark",
