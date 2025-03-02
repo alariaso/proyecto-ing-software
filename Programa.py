@@ -811,6 +811,77 @@ def update_stats_income_by_sale(dfs_originales, selected_year):
     return f"${mean:,.2f}", f"{std:,.2f}"
 
 
+@app.callback(
+    Output("estadisticas-clientes-promedio-ingresos-por-cliente", "children"),
+    Output("estadisticas-clientes-desviacion-ingresos-por-cliente", "children"),
+    Input("stored-data-original", "data"),
+    Input("year-selector", "value"),
+)
+def update_stats_clients_income(dfs_originales, selected_year):
+    for f in ["ventas", "clientes", "productos_de_venta"]:
+        if f"{f}.csv" not in dfs_originales:
+            return no_update
+
+    df_clientes = pd.DataFrame(dfs_originales["clientes.csv"])
+    df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
+    df_ventas = df_ventas[df_ventas["year"] == int(selected_year)]
+    df_productos_de_venta = pd.DataFrame(dfs_originales["productos_de_venta.csv"])
+
+    df = (
+        df_clientes.merge(
+            df_ventas,
+            how="left",
+            left_on="ID",
+            right_on="Cliente",
+            suffixes=("_cliente", "_venta"),
+        )
+        .merge(
+            df_productos_de_venta, how="left", left_on="ID_venta", right_on="ID venta"
+        )[["nombre", "valor"]]
+        .groupby("nombre")
+        .sum()["valor"]
+    )
+
+    mean = df.mean()
+    std = df.std()
+
+    return f"${mean:,.2f}", f"{std:,.2f}"
+
+
+@app.callback(
+    Output("estadisticas-clientes-promedio-cantidad-productos", "children"),
+    Output("estadisticas-clientes-desviacion-cantidad-productos", "children"),
+    Input("stored-data-original", "data"),
+    Input("year-selector", "value"),
+)
+def update_stats_clients_product_qty(dfs_originales, selected_year):
+    if (
+        "ventas.csv" not in dfs_originales
+        or "productos_de_venta.csv" not in dfs_originales
+    ):
+        return no_update
+
+    df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
+    df_ventas = df_ventas[df_ventas["year"] == int(selected_year)]
+    df_productos_de_venta = pd.DataFrame(dfs_originales["productos_de_venta.csv"])
+
+    df = (
+        df_productos_de_venta.merge(
+            df_ventas,
+            left_on="ID venta",
+            right_on="ID",
+            suffixes=("_producto_de_venta", "_venta"),
+        )[["ID producto", "Cliente"]]
+        .groupby("Cliente")
+        .count()["ID producto"]
+    )
+
+    mean = df.mean()
+    std = df.std()
+
+    return f"{mean:,.2f}", f"{std:,.2f}"
+
+
 def gen_tabla_productos_vendidos(dfs_originales, selected_year, size, mas: bool):
     df_ventas = pd.DataFrame(dfs_originales["ventas.csv"])
     df_ventas = df_ventas[df_ventas["year"] == int(selected_year)]
