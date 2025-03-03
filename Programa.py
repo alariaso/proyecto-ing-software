@@ -574,6 +574,7 @@ def update_data(
     Output("stored-for-excel-export-ventas", "data"),
     Input("stored-data-ventas-producto", "data"),  # Obtiene los datos procesados
     Input("year-selector", "value"),
+    prevent_initial_call=True
 )
 def update_charts(stored_data, selected_year):
     if not stored_data:
@@ -705,6 +706,7 @@ def update_charts(stored_data, selected_year):
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
     Input("tabla-productos-mas-vendidos-cantidad", "value"),
+    prevent_initial_call=True
 )
 def update_most_sold_products_table(dfs_originales, selected_year, size):
     if not dfs_originales:
@@ -720,6 +722,7 @@ def update_most_sold_products_table(dfs_originales, selected_year, size):
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
     Input("tabla-productos-menos-vendidos-cantidad", "value"),
+    prevent_initial_call=True
 )
 def update_least_sold_products_table(dfs_originales, selected_year, size):
     if not dfs_originales:
@@ -734,6 +737,7 @@ def update_least_sold_products_table(dfs_originales, selected_year, size):
     Output("stored-for-excel-export-ventas_por_cliente", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
+    prevent_initial_call=True
 )
 def update_qty_by_client_chart(dfs_originales, selected_year):
     if not dfs_originales:
@@ -768,6 +772,7 @@ def update_qty_by_client_chart(dfs_originales, selected_year):
     Output("stored-for-excel-export-clientes_por_productos", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
+    prevent_initial_call=True
 )
 def update_client_by_product_chart(dfs_originales, selected_year):
     if not dfs_originales:
@@ -833,6 +838,7 @@ def update_client_by_product_chart(dfs_originales, selected_year):
     Output("stored-for-excel-export-estadisticas_ventas_productos", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
+    prevent_initial_call=True
 )
 def update_stats_products_by_sale(dfs_originales, selected_year):
     if not dfs_originales:
@@ -860,6 +866,7 @@ def update_stats_products_by_sale(dfs_originales, selected_year):
     Output("stored-for-excel-export-estadisticas_ventas_ingreso", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
+    prevent_initial_call=True
 )
 def update_stats_income_by_sale(dfs_originales, selected_year):
     if not dfs_originales:
@@ -887,6 +894,7 @@ def update_stats_income_by_sale(dfs_originales, selected_year):
     Output("stored-for-excel-export-estadisticas_clientes_ingreso", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
+    prevent_initial_call=True
 )
 def update_stats_clients_income(dfs_originales, selected_year):
     if not dfs_originales:
@@ -924,6 +932,7 @@ def update_stats_clients_income(dfs_originales, selected_year):
     Output("stored-for-excel-export-estadisticas_clientes_productos", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
+    prevent_initial_call=True
 )
 def update_stats_clients_product_qty(dfs_originales, selected_year):
     if not dfs_originales:
