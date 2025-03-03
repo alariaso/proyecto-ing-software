@@ -43,7 +43,6 @@ import dash_bootstrap_components as dbc
 app = Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
 app.title = "Reportes"  # Cambiar el titulo de la pagina
 
-
 # === COLORES DE LA PAGINA ===
 
 COLOR_FONDO = "#222222"  # Fondo oscuro
@@ -59,8 +58,10 @@ app.layout = html.Div(
         "padding": "20px",
         "fontFamily": "Arial, sans-serif",
     },
+    
     children=[
         # Titulos principales
+        
         html.H2(
             "Compañía induboton SAS",
             style={"textAlign": "center", "marginBottom": "5px"},
@@ -91,8 +92,38 @@ app.layout = html.Div(
             style={"textAlign": "center", "marginBottom": "20px"},
             multiple=True,
         ),
-        html.Div(
+        
+
+        html.Div(#Pestaña para  visualizar los .csv importados
             [
+                html.Div(
+                    [  
+                    dbc.Button("Ver Archivos Importados", 
+                               id="open-modal-button", 
+                               color="secondary",
+                               style={"position": "absolute", "top": "20px", "left": "20px"}
+                               ),
+                    
+                    dbc.Modal(
+                        [
+                        dbc.ModalHeader(dbc.ModalTitle("Datos Importados")),
+                        dbc.ModalBody(
+                            dbc.Tabs(id="csv-tabs", active_tab="tab-0"),  # Pestañas dinamicas
+                        ),
+                        dbc.ModalFooter(
+                            dbc.Button("Cerrar", id="close-modal-button", color="secondary")
+                        ),
+                        ],
+                    id="csv-modal",
+                    size="xl",
+                    is_open=False,
+                            ),
+
+                    ]
+                ),
+
+
+
                 html.Div(
                     [
                         dbc.Button(
@@ -1019,6 +1050,50 @@ clientside_callback(
     """,
     Input("savePDF-button", "n_clicks"),
 )
+
+@app.callback(
+    Output("csv-modal", "is_open"),
+    [Input("open-modal-button", "n_clicks"), Input("close-modal-button", "n_clicks")],
+    [State("csv-modal", "is_open")],
+)
+def toggle_modal(open_click, close_click, is_open):
+    if open_click or close_click:
+        return not is_open
+    return is_open
+
+
+@app.callback(
+    Output("csv-tabs", "children"),
+    Input("stored-data-original", "data"),
+            )
+def update_tabs(dfs_originales):
+    if not dfs_originales:
+        return []
+
+    tabs = []
+    for idx, (file_name, data) in enumerate(dfs_originales.items()):
+        df = pd.DataFrame(data)
+
+        tab = dbc.Tab(
+            label=file_name,  # Nombre del archivo en la pestaña
+            tab_id=f"tab-{idx}",
+            children=[
+                dash_table.DataTable(
+                    columns=[{"name": col, "id": col} for col in df.columns],
+                    data=df.to_dict("records"),
+                    style_table={"overflowX": "auto"},
+                    style_cell={
+                        "textAlign": "left",
+                        "color": "#FFFFFF",
+                        "backgroundColor": "#222222",
+                    },
+                    style_header={"fontWeight": "bold"},
+                )
+            ],
+        )
+        tabs.append(tab)
+
+    return tabs
 
 # =============================
 # 5. EJECUCION DE LA APLICACION
