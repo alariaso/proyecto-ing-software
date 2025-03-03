@@ -58,10 +58,8 @@ app.layout = html.Div(
         "padding": "20px",
         "fontFamily": "Arial, sans-serif",
     },
-    
     children=[
         # Titulos principales
-        
         html.H2(
             "Compañía induboton SAS",
             style={"textAlign": "center", "marginBottom": "5px"},
@@ -92,38 +90,42 @@ app.layout = html.Div(
             style={"textAlign": "center", "marginBottom": "20px"},
             multiple=True,
         ),
-        
-
-        html.Div(#Pestaña para  visualizar los .csv importados
+        html.Div(  # Pestaña para  visualizar los .csv importados
             [
                 html.Div(
-                    [  
-                    dbc.Button("Ver Archivos Importados", 
-                               id="open-modal-button", 
-                               color="secondary",
-                               style={"position": "absolute", "top": "20px", "left": "20px"}
-                               ),
-                    
-                    dbc.Modal(
-                        [
-                        dbc.ModalHeader(dbc.ModalTitle("Datos Importados")),
-                        dbc.ModalBody(
-                            dbc.Tabs(id="csv-tabs", active_tab="tab-0"),  # Pestañas dinamicas
+                    [
+                        dbc.Button(
+                            "Ver Archivos Importados",
+                            id="open-modal-button",
+                            color="secondary",
+                            style={
+                                "position": "absolute",
+                                "top": "20px",
+                                "left": "20px",
+                            },
                         ),
-                        dbc.ModalFooter(
-                            dbc.Button("Cerrar", id="close-modal-button", color="secondary")
+                        dbc.Modal(
+                            [
+                                dbc.ModalHeader(dbc.ModalTitle("Datos Importados")),
+                                dbc.ModalBody(
+                                    dbc.Tabs(
+                                        id="csv-tabs", active_tab="tab-0"
+                                    ),  # Pestañas dinamicas
+                                ),
+                                dbc.ModalFooter(
+                                    dbc.Button(
+                                        "Cerrar",
+                                        id="close-modal-button",
+                                        color="secondary",
+                                    )
+                                ),
+                            ],
+                            id="csv-modal",
+                            size="xl",
+                            is_open=False,
                         ),
-                        ],
-                    id="csv-modal",
-                    size="xl",
-                    is_open=False,
-                            ),
-
                     ]
                 ),
-
-
-
                 html.Div(
                     [
                         dbc.Button(
@@ -574,7 +576,7 @@ def update_data(
     Output("stored-for-excel-export-ventas", "data"),
     Input("stored-data-ventas-producto", "data"),  # Obtiene los datos procesados
     Input("year-selector", "value"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def update_charts(stored_data, selected_year):
     if not stored_data:
@@ -706,7 +708,7 @@ def update_charts(stored_data, selected_year):
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
     Input("tabla-productos-mas-vendidos-cantidad", "value"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def update_most_sold_products_table(dfs_originales, selected_year, size):
     if not dfs_originales:
@@ -722,7 +724,7 @@ def update_most_sold_products_table(dfs_originales, selected_year, size):
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
     Input("tabla-productos-menos-vendidos-cantidad", "value"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def update_least_sold_products_table(dfs_originales, selected_year, size):
     if not dfs_originales:
@@ -737,7 +739,7 @@ def update_least_sold_products_table(dfs_originales, selected_year, size):
     Output("stored-for-excel-export-ventas_por_cliente", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def update_qty_by_client_chart(dfs_originales, selected_year):
     if not dfs_originales:
@@ -772,7 +774,7 @@ def update_qty_by_client_chart(dfs_originales, selected_year):
     Output("stored-for-excel-export-clientes_por_productos", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def update_client_by_product_chart(dfs_originales, selected_year):
     if not dfs_originales:
@@ -838,7 +840,7 @@ def update_client_by_product_chart(dfs_originales, selected_year):
     Output("stored-for-excel-export-estadisticas_ventas_productos", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def update_stats_products_by_sale(dfs_originales, selected_year):
     if not dfs_originales:
@@ -866,7 +868,7 @@ def update_stats_products_by_sale(dfs_originales, selected_year):
     Output("stored-for-excel-export-estadisticas_ventas_ingreso", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def update_stats_income_by_sale(dfs_originales, selected_year):
     if not dfs_originales:
@@ -894,7 +896,7 @@ def update_stats_income_by_sale(dfs_originales, selected_year):
     Output("stored-for-excel-export-estadisticas_clientes_ingreso", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def update_stats_clients_income(dfs_originales, selected_year):
     if not dfs_originales:
@@ -932,7 +934,7 @@ def update_stats_clients_income(dfs_originales, selected_year):
     Output("stored-for-excel-export-estadisticas_clientes_productos", "data"),
     Input("stored-data-original", "data"),
     Input("year-selector", "value"),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def update_stats_clients_product_qty(dfs_originales, selected_year):
     if not dfs_originales:
@@ -1060,6 +1062,7 @@ clientside_callback(
     Input("savePDF-button", "n_clicks"),
 )
 
+
 @app.callback(
     Output("csv-modal", "is_open"),
     [Input("open-modal-button", "n_clicks"), Input("close-modal-button", "n_clicks")],
@@ -1074,7 +1077,7 @@ def toggle_modal(open_click, close_click, is_open):
 @app.callback(
     Output("csv-tabs", "children"),
     Input("stored-data-original", "data"),
-            )
+)
 def update_tabs(dfs_originales):
     if not dfs_originales:
         return []
@@ -1103,6 +1106,7 @@ def update_tabs(dfs_originales):
         tabs.append(tab)
 
     return tabs
+
 
 # =============================
 # 5. EJECUCION DE LA APLICACION
