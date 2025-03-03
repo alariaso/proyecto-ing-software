@@ -12,6 +12,7 @@
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from dash import (
     Dash,
     html,
@@ -26,6 +27,11 @@ from dash import (
 import base64
 import io
 import dash_bootstrap_components as dbc
+
+
+# Corregir error random
+# https://github.com/plotly/plotly.py/issues/3441#issuecomment-1271747147
+go.Figure(layout=dict(template='plotly'))
 
 
 # =================================
